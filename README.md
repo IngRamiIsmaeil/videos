@@ -1,3 +1,11 @@
+### User Story
+This Project is Dummy Project created for Jobs Application Purpose. To Show HRs once of my Simple Projecte as WebDeveloper 
+With React and Semantic- UI
+
+### Prerequest
+You need to register account in (https://console.developers.google.com/) and activate the api service for YouTube
+Once you get the Api Key for YouTube V3 please Copy Paste it in The required Dialig Feld
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
