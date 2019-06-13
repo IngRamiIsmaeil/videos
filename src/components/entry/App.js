@@ -1,11 +1,26 @@
 import React from 'react';
 import './App.css';
-import SearchBar from '../top/SearchBar'
+import SearchBar from '../top/SearchBar';
+import VideoDisplay from '../middel/VideoDisplay';
+import VideosList from '../right/VideosList';
 import Youtube from '../../service/YoutubeService';
 import Spinner from '../utility/Spinner';
 import ErrorMessage from '../utility/ErrorMessage';
 class App extends React.Component {
-  state = { load: { active: false, header: null, message: null }, error: { present: false, header: null, errorMessage: null } }
+  state = {
+    videos: [],
+    currentSelectedVideo: null,
+    load: {
+      active: false,
+      header: null,
+      message: null
+    },
+    error: {
+      present: false,
+      header: null,
+      errorMessage: null
+    }
+  }
 
   onYouTubeRequestHelper = async (searchedVideoTerm) => {
     let userKey = null;
@@ -24,7 +39,10 @@ class App extends React.Component {
     if (userKey) {
       await Youtube.get('/search', { params: { key: userKey, q: searchedVideoTerm } }).then(
         d => {
+          console.log('data ', d.data.items);
           this.setState({
+            videos: d.data.items,
+            currentSelectedVideo: d.data.items[0],
             load: { active: false, header: null, message: null },
             error: { present: false, message: null }
           })
@@ -60,21 +78,73 @@ class App extends React.Component {
     })
   }
 
+  onVideoItemSelect = (videoItem) => {
+    this.setState({ currentSelectedVideo: videoItem });
+    console.log(videoItem);
+  }
 
+  getSpinnerOrError() {
+    if (this.state.load.active) {
+      return (
+        <div className="ui segment">
+          <Spinner />
+        </div>
+      )
+    } else if (this.state.error.present) {
+      return (
+        <div className="ui segment">
+          <ErrorMessage header={this.state.error.header} errorMessage={this.state.error.errorMessage} onHideErrorMessage={() => this.setState(
+            {
+              error: { present: false, header: null, errorMessage: null }
+            }
+          )} />
+        </div>
+      )
+    } else {
+      return null;
+    }
+  }
+
+  getVideoDisplay() {
+    if (this.state.videos.length) {
+      return (
+        <VideoDisplay video={this.state.currentSelectedVideo} />
+      )
+    } else {
+      return <div></div>
+    }
+  }
+
+  getVideoList() {
+    if (this.state.videos.length) {
+      return (
+        <VideosList videos={this.state.videos} currentSelectedVideo={this.state.currentSelectedVideo} onVideoItemSelect={this.onVideoItemSelect} />
+      )
+    } else {
+      return <div></div>
+    }
+  }
   render() {
     return (
-      <div className="app ui raised very padded text container" style={{ padding: ".50em .50em", margin: "1em" }}>
-        <div className="">
-          <SearchBar onSearch={this.onRequestSearch} />
-        </div>
-        {this.state.load.active ?
-          <Spinner /> : this.state.error.present ?
-            <ErrorMessage header={this.state.error.header} errorMessage={this.state.error.errorMessage} onHideErrorMessage={() => this.setState(
+      <div className="ui container" style={{ padding: ".50em .50em", margin: "1em" }}>
+        <SearchBar onSearch={this.onRequestSearch} />
+
+        {this.getSpinnerOrError()}
+
+        <div className="ui grid">
+          <div className="ui row">
+            <div className="eleven wide column">
               {
-                error: { present: false, header: null, errorMessage: null }
+                this.getVideoDisplay()
               }
-            )} /> :
-            null}
+            </div>
+            <div className="five wide column">
+              {
+                this.getVideoList()
+              }
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
